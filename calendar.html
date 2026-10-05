@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>馬卡龍月曆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== 配色：取自頁面的米色外框、白卡、金牌深藍與金色，加上馬卡龍點綴色 ===== */
+  :root {
+    --frame:   #F6EEDC;   /* 米色外框（同時鐘 widget） */
+    --card:    #FFFFFF;
+    --navy:    #1F2D4A;   /* 金牌 logo 深藍 */
+    --gold:    #C9A24B;   /* 金牌 logo 金色 */
+    --ink:     #3A3F4B;
+    --muted:   #9AA0AB;
+    --line:    #EFE7D6;
+    --blue:    #3B82D6;   /* 進度條藍 */
+
+    /* 馬卡龍色 */
+    --rose:    #F7D6D9;
+    --rose-ink:#C2606C;
+    --mint:    #D3EEDF;
+    --mint-ink:#3E8E68;
+    --lilac:   #E4DCF5;
+    --lilac-ink:#7A62B8;
+    --lemon:   #FBF0C9;
+    --peach:   #FCDCCB;
+    --sky:     #D6E8F7;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: transparent;
+    font-family: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    color: var(--ink);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 12px;
+  }
+
+  .frame {
+    width: 100%; max-width: 420px;
+    background: var(--frame);
+    border-radius: 22px;
+    padding: 16px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 1px 0 rgba(31,45,74,.04);
+  }
+
+  /* ===== 標題列 ===== */
+  .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .title { display: flex; align-items: baseline; gap: 8px; }
+  .year  { font-family: Quicksand, sans-serif; font-weight: 600; color: var(--muted); font-size: 14px; }
+  .month { font-family: Quicksand, sans-serif; font-weight: 700; color: var(--navy); font-size: 26px; letter-spacing: .5px; }
+  .month small { font-family: "Noto Sans TC", sans-serif; font-size: 15px; font-weight: 500; margin-left: 2px; }
+  .nav { display: flex; gap: 6px; align-items: center; }
+  .btn {
+    border: 0; cursor: pointer; font: inherit;
+    height: 30px; min-width: 30px; padding: 0 10px; border-radius: 999px;
+    background: var(--lemon); color: var(--navy); font-size: 13px; font-weight: 500;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); background: #F8E6A9; }
+  .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .btn.arrow { padding: 0; width: 30px; background: var(--sky); font-family: Quicksand, sans-serif; font-weight: 700; }
+  .btn.arrow:hover { background: #C3DCF2; }
+
+  /* ===== 星期列與日期格 ===== */
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .dow {
+    text-align: center; font-size: 12px; font-weight: 500; color: var(--muted);
+    padding: 4px 0 8px;
+  }
+  .dow.weekend { color: var(--rose-ink); }
+
+  .day {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 12px;
+    font-family: Quicksand, sans-serif; font-weight: 600; font-size: 15px;
+    color: var(--ink);
+    cursor: default;
+    transition: transform .12s ease;
+  }
+  .day.other { color: #D2D5DB; }
+  .day.weekend:not(.other) { background: #FDF3F4; color: var(--rose-ink); }
+  .day.holiday:not(.other) { background: var(--rose); color: var(--rose-ink); }
+  .day.event:not(.other)   { background: var(--lilac); color: var(--lilac-ink); }
+  .day.today {
+    background: var(--navy) !important; color: #fff !important;
+    box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--gold);
+  }
+  .day .dot {
+    position: absolute; bottom: 6px; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor; opacity: .7;
+  }
+  .day[title]:not(.other):hover { transform: translateY(-1px); }
+
+  /* ===== 倒數（只有加上 countdown 參數時才顯示） ===== */
+  .countdown {
+    margin-top: 14px; display: flex; align-items: center; justify-content: space-between;
+    background: var(--mint); color: var(--mint-ink);
+    border-radius: 12px; padding: 8px 12px; font-size: 13px; font-weight: 500;
+  }
+  .countdown[hidden] { display: none; }
+  .countdown b { font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; margin: 0 2px; }
+
+
+  .note { margin-top: 10px; font-size: 12px; color: var(--ink); text-align: center; }
+  .note:empty { display: none; }
+
+  @media (max-width: 340px) {
+    .frame { padding: 10px; border-radius: 18px; }
+    .card { padding: 14px 12px; }
+    .day { font-size: 13px; border-radius: 10px; }
+    .month { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="card">
+    <div class="head">
+      <div class="title">
+        <span class="month" id="month"></span>
+        <span class="year" id="year"></span>
+      </div>
+      <div class="nav">
+        <button class="btn arrow" id="prev" aria-label="上個月">‹</button>
+        <button class="btn" id="today">今天</button>
+        <button class="btn arrow" id="next" aria-label="下個月">›</button>
+      </div>
+    </div>
+
+    <div class="grid" id="dows"></div>
+    <div class="grid" id="days" role="grid" aria-label="月曆"></div>
+    <div class="note" id="note"></div>
+
+    <div class="countdown" id="countdown" hidden></div>
+  </div>
+</div>
+
+<script>
+/*
+  ===== 網址參數（可選）=====
+  ?start=sun                            週日開頭（預設週一開頭）
+  ?events=2026-10-14:第一次段考;2026-11-20:模擬考   自訂事件，用分號分隔
+  ?countdown=2027-05-15:會考             底部顯示倒數（日期請自行填正確）
+  ?title=金牌補習班                      顯示在月份旁（可省略）
+*/
+const params = new URLSearchParams(location.search);
+const START_SUNDAY = params.get('start') === 'sun';
+
+/* 固定日期的國定假日（農曆節日每年不同，請用 events 參數自行加入） */
+const FIXED_HOLIDAYS = {
+  '01-01': '元旦',
+  '02-28': '和平紀念日',
+  '04-04': '兒童節',
+  '05-01': '勞動節',
+  '09-28': '教師節',
+  '10-10': '國慶日',
+  '10-25': '臺灣光復節',
+  '12-25': '行憲紀念日',
+};
+
+function parsePairs(str) {
+  const map = {};
+  if (!str) return map;
+  str.split(';').forEach(item => {
+    const i = item.indexOf(':');
+    if (i > 0) map[item.slice(0, i).trim()] = item.slice(i + 1).trim();
+  });
+  return map;
+}
+const EVENTS = parsePairs(params.get('events'));
+
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const sameDay = (a, b) => ymd(a) === ymd(b);
+
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t - yearStart) / 864e5 + 1) / 7);
+}
+
+const $ = id => document.getElementById(id);
+let view = new Date(); view.setDate(1);
+
+function renderDows() {
+  const names = START_SUNDAY ? ['日','一','二','三','四','五','六'] : ['一','二','三','四','五','六','日'];
+  $('dows').innerHTML = names.map(n =>
+    `<div class="dow${n === '六' || n === '日' ? ' weekend' : ''}">${n}</div>`).join('');
+}
+
+function render() {
+  const now = new Date();
+  const y = view.getFullYear(), m = view.getMonth();
+
+  $('month').innerHTML = `${m + 1}<small>月</small>`;
+  $('year').textContent = (params.get('title') ? params.get('title') + ' · ' : '') + y;
+
+  const first = new Date(y, m, 1);
+  const offset = START_SUNDAY ? first.getDay() : (first.getDay() + 6) % 7;
+  const start = new Date(y, m, 1 - offset);
+
+  const cells = [];
+  const total = Math.ceil((offset + new Date(y, m + 1, 0).getDate()) / 7) * 7;   // 只畫需要的列數
+  for (let i = 0; i < total; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const key = ymd(d);
+    const md = key.slice(5);
+    const other = d.getMonth() !== m;
+    const wd = d.getDay();
+    const holiday = FIXED_HOLIDAYS[md];
+    const event = EVENTS[key];
+    const cls = ['day'];
+    if (other) cls.push('other');
+    if (wd === 0 || wd === 6) cls.push('weekend');
+    if (holiday) cls.push('holiday');
+    if (event) cls.push('event');
+    if (sameDay(d, now)) cls.push('today');
+    const label = [holiday, event].filter(Boolean).join('・');
+    cells.push(
+      `<div class="${cls.join(' ')}" data-date="${key}"${label ? ` title="${label}"` : ''} role="gridcell" aria-label="${m + 1}月${d.getDate()}日${label ? '，' + label : ''}">
+        ${d.getDate()}${label && !other ? '<span class="dot"></span>' : ''}
+      </div>`);
+  }
+  $('days').innerHTML = cells.join('');
+
+  const isCurrent = y === now.getFullYear() && m === now.getMonth();
+
+  // 今天的節日或事件
+  const todayLabel = [FIXED_HOLIDAYS[ymd(now).slice(5)], EVENTS[ymd(now)]].filter(Boolean).join('・');
+  $('note').textContent = isCurrent && todayLabel ? `今天：${todayLabel}` : '';
+
+  // 倒數
+  const cd = params.get('countdown');
+  if (cd && cd.includes(':')) {
+    const [dateStr, name] = [cd.slice(0, cd.indexOf(':')), cd.slice(cd.indexOf(':') + 1)];
+    const target = new Date(dateStr + 'T00:00:00');
+    const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diff = Math.round((target - today0) / 864e5);
+    if (!isNaN(diff)) {
+      $('countdown').hidden = false;
+      $('countdown').innerHTML = diff >= 0
+        ? `<span>距離${name}</span><span>還有<b>${diff}</b>天</span>`
+        : `<span>${name}</span><span>已過 ${-diff} 天</span>`;
+    }
+  }
+}
+
+$('prev').onclick  = () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render(); };
+$('next').onclick  = () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render(); };
+$('today').onclick = () => { view = new Date(); view.setDate(1); render(); };
+
+// 點日期格：在下方顯示節日或事件
+$('days').addEventListener('click', e => {
+  const cell = e.target.closest('.day');
+  if (!cell) return;
+  const [yy, mm, dd] = cell.dataset.date.split('-');
+  $('note').textContent = cell.title ? `${+mm}/${+dd}：${cell.title}` : `${+mm}/${+dd}`;
+});
+
+renderDows();
+render();
+
+// 過了午夜自動換日
+setInterval(() => {
+  const marker = ymd(new Date());
+  if (marker !== render.last) { render.last = marker; render(); }
+}, 60 * 1000);
+render.last = ymd(new Date());
+</script>
+</body>
+</html>
