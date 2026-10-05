@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>會考倒數</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --frame: #F6EEDC;  --card: #FFFFFF;
+    --navy:  #1F2D4A;  --gold: #C9A24B;
+    --ink:   #3A3F4B;  --muted: #9AA0AB;
+    --rose:  #F7D6D9;  --rose-ink:  #C2606C;
+    --mint:  #D3EEDF;  --mint-ink:  #3E8E68;
+    --lilac: #E4DCF5;  --lilac-ink: #7A62B8;
+    --lemon: #FBF0C9;  --sky: #D6E8F7; --sky-ink: #3D6E9E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: transparent;
+    font-family: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    color: var(--ink);
+    display: flex; justify-content: center; padding: 12px;
+  }
+  .frame { width: 100%; max-width: 360px; background: var(--frame); border-radius: 22px; padding: 16px; }
+  .card  { background: var(--card); border-radius: 16px; padding: 20px 18px 18px; text-align: center; }
+
+  .pill {
+    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    background: var(--lemon); color: var(--navy);
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  }
+
+  .days { margin: 14px 0 4px; line-height: 1; color: var(--navy); }
+  .days b { font-family: Quicksand, sans-serif; font-weight: 700; font-size: 72px; letter-spacing: 1px; }
+  .days span { font-size: 18px; font-weight: 700; margin-left: 4px; }
+
+  .hms { display: flex; justify-content: center; gap: 8px; margin: 14px 0 16px; }
+  .unit { width: 64px; border-radius: 12px; padding: 8px 0 6px; }
+  .unit b { display: block; font-family: Quicksand, sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; }
+  .unit small { font-size: 11px; font-weight: 500; opacity: .85; }
+  .u-h { background: var(--rose);  color: var(--rose-ink); }
+  .u-m { background: var(--lilac); color: var(--lilac-ink); }
+  .u-s { background: var(--mint);  color: var(--mint-ink); }
+
+  .date { font-size: 13px; color: var(--muted); }
+  .date b { color: var(--ink); font-weight: 500; }
+
+  .weekend {
+    margin-top: 12px; display: inline-block; padding: 6px 12px; border-radius: 999px;
+    background: var(--sky); color: var(--sky-ink); font-size: 12px; font-weight: 500;
+  }
+  .weekend b { font-family: Quicksand, sans-serif; font-size: 15px; margin: 0 2px; }
+
+  .done { font-size: 26px; font-weight: 700; color: var(--navy); margin: 22px 0 10px; }
+  .done + .date { margin-bottom: 4px; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="card">
+    <span class="pill" id="label">116 會考倒數</span>
+
+    <div id="counting">
+      <div class="days"><b id="d">0</b><span>天</span></div>
+      <div class="hms" id="hms">
+        <div class="unit u-h"><b id="h">00</b><small>時</small></div>
+        <div class="unit u-m"><b id="m">00</b><small>分</small></div>
+        <div class="unit u-s"><b id="s">00</b><small>秒</small></div>
+      </div>
+    </div>
+    <div class="done" id="done" hidden></div>
+
+    <div class="date" id="dateText"></div>
+    <div class="weekend" id="weekend"></div>
+  </div>
+</div>
+
+<script>
+/*
+  網址參數（可選）：
+  ?date=2027-05-15     考試第一天（預設：116 年會考 2027-05-15，依教育部公文）
+  ?days=2              考試天數（預設 2）
+  ?name=會考            名稱（預設「會考」）
+  ?label=116 會考倒數   上方標籤文字
+  ?seconds=0           不顯示時分秒，只顯示天數
+*/
+const p = new URLSearchParams(location.search);
+const START = p.get('date') || '2027-05-15';
+const SPAN  = Math.max(1, parseInt(p.get('days') || '2', 10));
+const NAME  = p.get('name') || '會考';
+const SHOW_HMS = p.get('seconds') !== '0';
+if (p.get('label')) document.getElementById('label').textContent = p.get('label');
+else if (!p.get('date')) document.getElementById('label').textContent = '116 會考倒數';
+else document.getElementById('label').textContent = NAME + '倒數';
+
+const [Y, M, D] = START.split('-').map(Number);
+const examStart = new Date(Y, M - 1, D);                 // 第一天 00:00（裝置當地時間）
+const examEnd   = new Date(Y, M - 1, D + SPAN);           // 最後一天結束
+const WEEK = '日一二三四五六';
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+
+// 考試日期文字
+const last = new Date(Y, M - 1, D + SPAN - 1);
+const wd = [...Array(SPAN)].map((_, i) => WEEK[new Date(Y, M - 1, D + i).getDay()]).join('、');
+$('dateText').innerHTML = SPAN > 1
+  ? `<b>${Y} 年 ${M} 月 ${D}–${last.getDate()} 日</b>（${wd}）`
+  : `<b>${Y} 年 ${M} 月 ${D} 日</b>（${wd}）`;
+
+if (!SHOW_HMS) $('hms').hidden = true;
+
+// 考前還剩幾個週末（從明天起算，不含考試當週）
+function weekendsLeft(now) {
+  let n = 0;
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  while (d < examStart) {
+    if (d.getDay() === 6) n++;
+    d.setDate(d.getDate() + 1);
+  }
+  return n;
+}
+
+function tick() {
+  const now = new Date();
+  if (now >= examStart && now < examEnd) {               // 考試期間
+    $('counting').hidden = true; $('weekend').hidden = true;
+    $('done').hidden = false; $('done').textContent = `${NAME}加油！`;
+    return;
+  }
+  if (now >= examEnd) {                                   // 考完了
+    $('counting').hidden = true; $('weekend').hidden = true;
+    $('done').hidden = false; $('done').textContent = '辛苦了！🎉';
+    return;
+  }
+  let ms = examStart - now;
+  const d = Math.floor(ms / 864e5); ms -= d * 864e5;
+  const h = Math.floor(ms / 36e5);  ms -= h * 36e5;
+  const m = Math.floor(ms / 6e4);   ms -= m * 6e4;
+  const s = Math.floor(ms / 1e3);
+  $('d').textContent = d;
+  $('h').textContent = pad(h); $('m').textContent = pad(m); $('s').textContent = pad(s);
+  $('weekend').innerHTML = `考前還有 <b>${weekendsLeft(now)}</b> 個週末`;
+}
+tick();
+setInterval(tick, SHOW_HMS ? 1000 : 60000);
+</script>
+</body>
+</html>
