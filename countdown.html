@@ -16,6 +16,29 @@
     --mint:  #D3EEDF;  --mint-ink:  #3E8E68;
     --lilac: #E4DCF5;  --lilac-ink: #7A62B8;
     --lemon: #FBF0C9;  --sky: #D6E8F7; --sky-ink: #3D6E9E;
+    --title: var(--navy);
+  }
+
+  /* ===== 深色模式：跟著系統設定，或用 ?theme=dark 強制 ===== */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --frame: #2A2621;  --card: #1E1E1E;
+      --title: #F3EAD7;  --gold: #D9B866;
+      --ink:   #E6E1D8;  --muted: #8F8A82;
+      --rose:  #4A2E33;  --rose-ink:  #F0B4BC;
+      --mint:  #263F33;  --mint-ink:  #9FDCBC;
+      --lilac: #36304A;  --lilac-ink: #C9BAF0;
+      --lemon: #4A4127;  --sky: #26364A; --sky-ink: #A9CCEE;
+    }
+  }
+  :root[data-theme="dark"] {
+    --frame: #2A2621;  --card: #1E1E1E;
+    --title: #F3EAD7;  --gold: #D9B866;
+    --ink:   #E6E1D8;  --muted: #8F8A82;
+    --rose:  #4A2E33;  --rose-ink:  #F0B4BC;
+    --mint:  #263F33;  --mint-ink:  #9FDCBC;
+    --lilac: #36304A;  --lilac-ink: #C9BAF0;
+    --lemon: #4A4127;  --sky: #26364A; --sky-ink: #A9CCEE;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
@@ -30,11 +53,11 @@
 
   .pill {
     display: inline-block; padding: 4px 12px; border-radius: 999px;
-    background: var(--lemon); color: var(--navy);
+    background: var(--lemon); color: var(--title);
     font-size: 13px; font-weight: 700; letter-spacing: 1px;
   }
 
-  .days { margin: 14px 0 4px; line-height: 1; color: var(--navy); }
+  .days { margin: 14px 0 4px; line-height: 1; color: var(--title); }
   .days b { font-family: Quicksand, sans-serif; font-weight: 700; font-size: 72px; letter-spacing: 1px; }
   .days span { font-size: 18px; font-weight: 700; margin-left: 4px; }
 
@@ -55,7 +78,7 @@
   }
   .weekend b { font-family: Quicksand, sans-serif; font-size: 15px; margin: 0 2px; }
 
-  .done { font-size: 26px; font-weight: 700; color: var(--navy); margin: 22px 0 10px; }
+  .done { font-size: 26px; font-weight: 700; color: var(--title); margin: 22px 0 10px; }
   .done + .date { margin-bottom: 4px; }
 
   [hidden] { display: none !important; }
@@ -64,7 +87,7 @@
 <body>
 <div class="frame">
   <div class="card">
-    <span class="pill" id="label">116 會考倒數</span>
+    <span class="pill" id="label">會考倒數</span>
 
     <div id="counting">
       <div class="days"><b id="d">0</b><span>天</span></div>
@@ -87,16 +110,18 @@
   ?date=2027-05-15     考試第一天（預設：116 年會考 2027-05-15，依教育部公文）
   ?days=2              考試天數（預設 2）
   ?name=會考            名稱（預設「會考」）
-  ?label=116 會考倒數   上方標籤文字
+  ?label=會考倒數   上方標籤文字
   ?seconds=0           不顯示時分秒，只顯示天數
+  ?theme=dark / light  強制深色或淺色（預設跟著系統）
 */
 const p = new URLSearchParams(location.search);
 const START = p.get('date') || '2027-05-15';
 const SPAN  = Math.max(1, parseInt(p.get('days') || '2', 10));
 const NAME  = p.get('name') || '會考';
 const SHOW_HMS = p.get('seconds') !== '0';
+if (p.get('theme') === 'dark' || p.get('theme') === 'light') document.documentElement.dataset.theme = p.get('theme');
 if (p.get('label')) document.getElementById('label').textContent = p.get('label');
-else if (!p.get('date')) document.getElementById('label').textContent = '116 會考倒數';
+else if (!p.get('date')) document.getElementById('label').textContent = '會考倒數';
 else document.getElementById('label').textContent = NAME + '倒數';
 
 const [Y, M, D] = START.split('-').map(Number);
@@ -106,12 +131,12 @@ const WEEK = '日一二三四五六';
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
 
-// 考試日期文字
+// 考試日期文字：2027.05.15 - 2027.05.16
+const dot = d => `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
 const last = new Date(Y, M - 1, D + SPAN - 1);
-const wd = [...Array(SPAN)].map((_, i) => WEEK[new Date(Y, M - 1, D + i).getDay()]).join('、');
 $('dateText').innerHTML = SPAN > 1
-  ? `<b>${Y} 年 ${M} 月 ${D}–${last.getDate()} 日</b>（${wd}）`
-  : `<b>${Y} 年 ${M} 月 ${D} 日</b>（${wd}）`;
+  ? `<b>${dot(examStart)} - ${dot(last)}</b>`
+  : `<b>${dot(examStart)}</b>`;
 
 if (!SHOW_HMS) $('hms').hidden = true;
 
