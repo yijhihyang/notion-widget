@@ -42,46 +42,64 @@
     --lilac: #36304A;  --lilac-ink: #C9BAF0;
     --lemon: #4A4127;  --sky: #26364A; --sky-ink: #A9CCEE;
   }
+  /*
+    ===== 等比例縮放 =====
+    整個 widget 以 360 × 360 為設計尺寸，--u 代表「1 個設計像素」實際要畫多大。
+    取寬、高兩個方向中比較小的比例，所以不管在 Notion 把嵌入框拉大、縮小、拉扁、拉長，
+    內容都會完整塞進框內、不會被裁掉；外框顏色則一直填滿整個嵌入區塊。
+  */
+  :root { --u: min(calc(100vw / 360), calc(100vh / 360)); }
+
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
   body {
-    background: transparent;
     font-family: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
     color: var(--ink);
-    display: block; padding: 0;
   }
-  .frame { width: 100%; min-height: 100%; display: flex; align-items: center; justify-content: center; background: var(--frame); border-radius: 0; padding: 16px; }
-  .card  { width: 100%; background: var(--card); border-radius: 16px; padding: 20px 18px 18px; text-align: center; }
+  .frame {
+    width: 100%; height: 100%;
+    background: var(--frame);
+    padding: calc(16 * var(--u));
+    display: flex;
+  }
+  .card {
+    flex: 1;
+    background: var(--card);
+    border-radius: calc(16 * var(--u));
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: calc(16 * var(--u));
+  }
 
   .pill {
-    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    display: inline-block; padding: calc(4 * var(--u)) calc(12 * var(--u)); border-radius: 999px;
     background: var(--lemon); color: var(--title);
-    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    font-size: calc(13 * var(--u)); font-weight: 700; letter-spacing: calc(1 * var(--u));
   }
 
-  .days { margin: 14px 0 4px; line-height: 1; color: var(--title); }
-  .days b { font-family: Quicksand, sans-serif; font-weight: 700; font-size: 72px; letter-spacing: 1px; }
-  .days span { font-size: 18px; font-weight: 700; margin-left: 4px; }
+  .days { margin: calc(14 * var(--u)) 0 calc(4 * var(--u)); line-height: 1; color: var(--title); }
+  .days b { font-family: Quicksand, sans-serif; font-weight: 700; font-size: calc(72 * var(--u)); }
+  .days span { font-size: calc(18 * var(--u)); font-weight: 700; margin-left: calc(4 * var(--u)); }
 
-  .hms { display: flex; justify-content: center; gap: 8px; margin: 14px 0 16px; }
-  .unit { width: 64px; border-radius: 12px; padding: 8px 0 6px; }
-  .unit b { display: block; font-family: Quicksand, sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; }
-  .unit small { font-size: 11px; font-weight: 500; opacity: .85; }
+  .hms { display: flex; justify-content: center; gap: calc(8 * var(--u)); margin: calc(14 * var(--u)) 0 calc(16 * var(--u)); }
+  .unit { width: calc(64 * var(--u)); border-radius: calc(12 * var(--u)); padding: calc(8 * var(--u)) 0 calc(6 * var(--u)); }
+  .unit b { display: block; font-family: Quicksand, sans-serif; font-size: calc(22 * var(--u)); font-weight: 700; line-height: 1.1; }
+  .unit small { font-size: calc(11 * var(--u)); font-weight: 500; opacity: .85; }
   .u-h { background: var(--rose);  color: var(--rose-ink); }
   .u-m { background: var(--lilac); color: var(--lilac-ink); }
   .u-s { background: var(--mint);  color: var(--mint-ink); }
 
-  .date { font-size: 13px; color: var(--muted); }
+  .date { font-size: calc(13 * var(--u)); color: var(--muted); }
   .date b { color: var(--ink); font-weight: 500; }
 
   .weekend {
-    margin-top: 12px; display: inline-block; padding: 6px 12px; border-radius: 999px;
-    background: var(--sky); color: var(--sky-ink); font-size: 12px; font-weight: 500;
+    margin-top: calc(12 * var(--u)); display: inline-block;
+    padding: calc(6 * var(--u)) calc(12 * var(--u)); border-radius: 999px;
+    background: var(--sky); color: var(--sky-ink); font-size: calc(12 * var(--u)); font-weight: 500;
   }
-  .weekend b { font-family: Quicksand, sans-serif; font-size: 15px; margin: 0 2px; }
+  .weekend b { font-family: Quicksand, sans-serif; font-size: calc(15 * var(--u)); margin: 0 calc(2 * var(--u)); }
 
-  .done { font-size: 26px; font-weight: 700; color: var(--title); margin: 22px 0 10px; }
-  .done + .date { margin-bottom: 4px; }
+  .done { font-size: calc(26 * var(--u)); font-weight: 700; color: var(--title); margin: calc(22 * var(--u)) 0 calc(10 * var(--u)); }
 
   [hidden] { display: none !important; }
 </style>
