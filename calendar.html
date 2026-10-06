@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>馬卡龍月曆</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,6 +11,7 @@
 <style>
   /* ===== 配色：取自頁面的米色外框、白卡、金牌深藍與金色，加上馬卡龍點綴色 ===== */
   :root {
+    color-scheme: light dark;
     --frame:   #F6EEDC;   /* 米色外框（同時鐘 widget） */
     --card:    #FFFFFF;
     --navy:    #1F2D4A;   /* 金牌 logo 深藍 */
@@ -32,22 +34,23 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
+  html, body { margin: 0; height: 100%; background: transparent; }
   body {
     background: transparent;
     font-family: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
     color: var(--ink);
-    display: flex; align-items: flex-start; justify-content: center;
-    padding: 12px;
+    display: block; padding: 0;
   }
 
   .frame {
-    width: 100%; max-width: 420px;
+    width: 100%; min-height: 100%;
+    display: flex; align-items: center; justify-content: center;
     background: var(--frame);
-    border-radius: 22px;
+    border-radius: 0;
     padding: 16px;
   }
   .card {
+    width: 100%;
     background: var(--card);
     border-radius: 16px;
     padding: 18px 18px 16px;
@@ -118,7 +121,7 @@
   .note:empty { display: none; }
 
   @media (max-width: 340px) {
-    .frame { padding: 10px; border-radius: 18px; }
+    .frame { padding: 10px; }
     .card { padding: 14px 12px; }
     .day { font-size: 13px; border-radius: 10px; }
     .month { font-size: 22px; }
